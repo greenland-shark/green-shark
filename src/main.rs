@@ -6,7 +6,7 @@ use std::io::{self, Write};
 use std::time::Duration;
 use std::{fs::File, thread};
 
-// TODO: Figure out how to delete tmp file once program exists
+// TODO: Figure out how to delete tmp file once program exists #2
 
 fn main() {
     println!("starting daemon for green shark");
