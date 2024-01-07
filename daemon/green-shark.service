@@ -1,0 +1,8 @@
+[Unit]
+Description=green-shark daemon
+
+[Service]
+ExecStart=green-shark
+
+[Install]
+WantedBy=default.target
