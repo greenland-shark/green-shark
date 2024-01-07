@@ -1,8 +1,17 @@
 [package]
 name = "green-shark"
-version = "0.1.0"
+version = "0.0.1"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[lib]
+path = "src/lib/mod.rs"
+
+[[bin]]
+path = "src/main.rs"
+name = "green-shark"
+
 [dependencies]
+daemonize = "0.5.0"
+notify-rust = "4.10.0"
