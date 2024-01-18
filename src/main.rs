@@ -1,89 +1,47 @@
-use std::time::Duration;
-
 use dbus::blocking::Connection;
-use dbus::channel::MatchingReceiver;
-use dbus::message::MatchRule;
-use dbus::Message;
+use dbus_crossroads::{Context, Crossroads};
+use std::error::Error;
 
-// This programs implements the equivalent of running the "dbus-monitor" tool
-fn main() {
-    // Very simple argument parsing.
-
-    // First open up a connection to the desired bus.
-    let conn = Connection::new_system().expect("D-Bus connection failed");
-
-    // Second create a rule to match messages we want to receive; in this example we add no
-    // further requirements, so all messages will match
-    let rule = MatchRule::new();
-
-    // Try matching using new scheme
-    let proxy = conn.with_proxy(
-        "org.freedesktop.DBus",
-        "/org/freedesktop/DBus",
-        Duration::from_millis(5000),
-    );
-    let result: Result<(), dbus::Error> = proxy.method_call(
-        "org.freedesktop.DBus.Monitoring",
-        "BecomeMonitor",
-        (vec![rule.match_str()], 0u32),
-    );
-
-    match result {
-        // BecomeMonitor was successful, start listening for messages
-        Ok(_) => {
-            conn.start_receive(
-                rule,
-                Box::new(|msg, _| {
-                    handle_message(&msg);
-                    true
-                }),
-            );
-        }
-        // BecomeMonitor failed, fallback to using the old scheme
-        Err(e) => {
-            eprintln!(
-                "Failed to BecomeMonitor: '{}', falling back to eavesdrop",
-                e
-            );
-
-            // First, we'll try "eavesdrop", which as the name implies lets us receive
-            // *all* messages, not just ours.
-            let rule_with_eavesdrop = {
-                let mut rule = rule.clone();
-                rule.eavesdrop = true;
-                rule
-            };
-
-            let result = conn.add_match(rule_with_eavesdrop, |_: (), _, msg| {
-                handle_message(&msg);
-                true
-            });
-
-            match result {
-                Ok(_) => {
-                    // success, we're now listening
-                }
-                // This can sometimes fail, for example when listening to the system bus as a non-root user.
-                // So, just like `dbus-monitor`, we attempt to fallback without `eavesdrop=true`:
-                Err(e) => {
-                    eprintln!("Failed to eavesdrop: '{}', trying without it", e);
-                    conn.add_match(rule, |_: (), _, msg| {
-                        handle_message(&msg);
-                        true
-                    })
-                    .expect("add_match failed");
-                }
-            }
-        }
-    }
-
-    // Loop and print out all messages received (using handle_message()) as they come.
-    // Some can be quite large, e.g. if they contain embedded images..
-    loop {
-        conn.process(Duration::from_millis(1000)).unwrap();
-    }
+struct Hello {
+    called_count: u32,
 }
 
-fn handle_message(msg: &Message) {
-    println!("Got message: {:?}", msg);
+fn main() -> Result<(), Box<dyn Error>> {
+    // TODO: Handle error
+    let conn = Connection::new_session()?;
+
+    conn.request_name("com.green_shark.green_sharkd", false, true, false)?;
+
+    let mut cr = Crossroads::new();
+
+    let iface_token = cr.register("com.green_shark.green_sharkd", |b| {
+        let hello_happened = b
+            .signal::<(String,), _>("HelloHappened", ("sender",))
+            .msg_fn();
+
+        b.method(
+            "Hello",
+            ("name",),
+            ("reply",),
+            move |ctx: &mut Context, hello: &mut Hello, (name,): (String,)| {
+                println!("Incoming hello call from {}!", name);
+                hello.called_count += 1;
+                let reply = format!(
+                    "Hello {}! This API has been used {} times.",
+                    name, hello.called_count
+                );
+
+                let signal_msg = hello_happened(ctx.path(), &(name,));
+                ctx.push_msg(signal_msg);
+
+                Ok((reply,))
+            },
+        );
+    });
+
+    cr.insert("/hello", &[iface_token], Hello { called_count: 0 });
+
+    cr.serve(&conn)?;
+
+    unreachable!()
 }
