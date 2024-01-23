@@ -1,47 +1,63 @@
-use dbus::blocking::Connection;
-use dbus_crossroads::{Context, Crossroads};
-use std::error::Error;
+use zbus::{Connection, Result, dbus_interface, ConnectionBuilder, SignalContext, fdo};
+use futures::stream::TryStreamExt;
+use event_listener::Event;
 
-struct Hello {
-    called_count: u32,
+struct Greeter {
+    name: String,
+    done: Event,
 }
 
-fn main() -> Result<(), Box<dyn Error>> {
-    // TODO: Handle error
-    let conn = Connection::new_session()?;
+#[dbus_interface(name = "org.green_sharkd.Greeter1")]
+impl Greeter {
+    async fn say_hello(&self, name: &str) -> String {
+        format!("Hello {}!", name)
+    }
 
-    conn.request_name("com.green_shark.green_sharkd", false, true, false)?;
+    async fn go_away(&self,
+    #[zbus(signal_context)]
+    ctxt: SignalContext<'_>,
+    ) -> fdo::Result<()> {
+        Self::greeted_everyone(&ctxt).await?;
+        self.done.notify(1);
 
-    let mut cr = Crossroads::new();
+        Ok(())
+    }
 
-    let iface_token = cr.register("com.green_shark.green_sharkd", |b| {
-        let hello_happened = b
-            .signal::<(String,), _>("HelloHappened", ("sender",))
-            .msg_fn();
+    #[dbus_interface(property)]
+    async fn greeter_name(&self) -> &str {
+        &self.name
+    }
 
-        b.method(
-            "Hello",
-            ("name",),
-            ("reply",),
-            move |ctx: &mut Context, hello: &mut Hello, (name,): (String,)| {
-                println!("Incoming hello call from {}!", name);
-                hello.called_count += 1;
-                let reply = format!(
-                    "Hello {}! This API has been used {} times.",
-                    name, hello.called_count
-                );
+    #[dbus_interface(property)]
+    async fn set_greeter_name(&mut self, name: String) {
+        self.name = name;
+    }
 
-                let signal_msg = hello_happened(ctx.path(), &(name,));
-                ctx.push_msg(signal_msg);
+    #[dbus_interface(signal)]
+    async fn greeted_everyone(ctxt: &SignalContext<'_>) -> Result<()>;
+}
 
-                Ok((reply,))
-            },
-        );
-    });
+#[tokio::main]
+async fn main() -> Result<()> {
+    let greeter = Greeter {
+        name: "GreeterName".to_string(),
+        done: event_listener::Event::new(),
+    };
 
-    cr.insert("/hello", &[iface_token], Hello { called_count: 0 });
+    let done_listener = greeter.done.listen();
 
-    cr.serve(&conn)?;
+    let connection = ConnectionBuilder::session()?
+        .name("org.green_sharkd.Greeter")?
+        .serve_at("/org/green_sharkd/Greeter", greeter)?
+        .build()
+        .await?;
 
-    unreachable!()
+
+    done_listener.await;
+
+
+    loop {
+        futures::future::pending::<()>().await;
+    }
+
 }
