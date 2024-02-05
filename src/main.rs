@@ -46,7 +46,7 @@ async fn main() -> Result<()> {
 
     let done_listener = greeter.done.listen();
 
-    let connection = ConnectionBuilder::session()?
+    let _connection = ConnectionBuilder::session()?
         .name("org.green_sharkd.Greeter")?
         .serve_at("/org/green_sharkd/Greeter", greeter)?
         .build()
@@ -61,3 +61,27 @@ async fn main() -> Result<()> {
     }
 
 }
+
+enum Currency {
+    NZD,
+    GBP,
+    BRL,
+}
+
+struct Transaction {
+    amount: (Currency, f32),
+    name: String,
+    label: String,
+    id: i64,
+    frequency: Frequency,
+    start_date: i64,
+    end_date: Option<i64>,
+}
+
+enum Frequency {
+    OneOff(i64),
+    Monthly(u8),
+    Weekly(u8),
+    Yearly((u8, u8)),
+}
+
