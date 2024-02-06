@@ -1,89 +1,82 @@
-use std::time::Duration;
+use zbus::{Connection, Result, dbus_interface, ConnectionBuilder, SignalContext, fdo};
+use futures::stream::TryStreamExt;
+use event_listener::Event;
+use chrono::Utc;
 
-use dbus::blocking::Connection;
-use dbus::channel::MatchingReceiver;
-use dbus::message::MatchRule;
-use dbus::Message;
+#[derive(Debug)]
+enum Currency {
+    NZD,
+    GBP,
+    BRL,
+}
 
-// This programs implements the equivalent of running the "dbus-monitor" tool
-fn main() {
-    // Very simple argument parsing.
+#[derive(Debug)]
+struct Transaction {
+    amount: (Currency, f32),
+    name: String,
+    label: String,
+    id: i64,
+    frequency: Frequency,
+    start_date: i64,
+    end_date: Option<i64>,
+}
 
-    // First open up a connection to the desired bus.
-    let conn = Connection::new_system().expect("D-Bus connection failed");
+#[derive(Debug)]
+enum Frequency {
+    OneOff(i64),
+    Monthly(u8),
+    Weekly(u8),
+    Yearly((u8, u8)),
+}
 
-    // Second create a rule to match messages we want to receive; in this example we add no
-    // further requirements, so all messages will match
-    let rule = MatchRule::new();
+#[derive(Debug)]
+struct State {
+    transactions: Vec<Transaction>
+}
 
-    // Try matching using new scheme
-    let proxy = conn.with_proxy(
-        "org.freedesktop.DBus",
-        "/org/freedesktop/DBus",
-        Duration::from_millis(5000),
-    );
-    let result: Result<(), dbus::Error> = proxy.method_call(
-        "org.freedesktop.DBus.Monitoring",
-        "BecomeMonitor",
-        (vec![rule.match_str()], 0u32),
-    );
+#[dbus_interface(name = "org.green_sharkd.Commands")]
+impl State {
+    async fn add_transaction(&mut self, amount: f32, name: &str) -> String {
+        println!("adding transaction");
+        let now = Utc::now();
+        let uid = now.timestamp();
+        let now = now.timestamp();
+        self.transactions.push( Transaction {
+            amount: (Currency::GBP, amount),
+            name: name.to_string(),
+            label: "Coffee".to_string(),
+            id: uid,
+            frequency: Frequency::OneOff(now),
+            start_date: now,
+            end_date: None,
+        });
 
-    match result {
-        // BecomeMonitor was successful, start listening for messages
-        Ok(_) => {
-            conn.start_receive(
-                rule,
-                Box::new(|msg, _| {
-                    handle_message(&msg);
-                    true
-                }),
-            );
-        }
-        // BecomeMonitor failed, fallback to using the old scheme
-        Err(e) => {
-            eprintln!(
-                "Failed to BecomeMonitor: '{}', falling back to eavesdrop",
-                e
-            );
-
-            // First, we'll try "eavesdrop", which as the name implies lets us receive
-            // *all* messages, not just ours.
-            let rule_with_eavesdrop = {
-                let mut rule = rule.clone();
-                rule.eavesdrop = true;
-                rule
-            };
-
-            let result = conn.add_match(rule_with_eavesdrop, |_: (), _, msg| {
-                handle_message(&msg);
-                true
-            });
-
-            match result {
-                Ok(_) => {
-                    // success, we're now listening
-                }
-                // This can sometimes fail, for example when listening to the system bus as a non-root user.
-                // So, just like `dbus-monitor`, we attempt to fallback without `eavesdrop=true`:
-                Err(e) => {
-                    eprintln!("Failed to eavesdrop: '{}', trying without it", e);
-                    conn.add_match(rule, |_: (), _, msg| {
-                        handle_message(&msg);
-                        true
-                    })
-                    .expect("add_match failed");
-                }
-            }
-        }
+        format!("Transactions: {:?}", self)
     }
 
-    // Loop and print out all messages received (using handle_message()) as they come.
-    // Some can be quite large, e.g. if they contain embedded images..
+    #[dbus_interface(property)]
+    async fn transactions(&self) -> String {
+        format!("{:?}", self.transactions)
+    }
+}
+
+#[tokio::main]
+async fn main() -> Result<()> {
+    let state: State = State {
+        transactions: Vec::new()
+    };
+
+
+    let _connection = ConnectionBuilder::session()?
+        .name("org.green_sharkd.GreenSharkd")?
+        .serve_at("/org/green_sharkd/State", state)?
+        .build()
+        .await?;
+
+
     loop {
-        conn.process(Duration::from_millis(1000)).unwrap();
+        futures::future::pending::<()>().await;
     }
+
 }
 
-fn handle_message(msg: &Message) {
-    println!("Got message: {:?}", msg);
-}

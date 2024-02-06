@@ -1,0 +1,19 @@
+#+title: Green Sharkd
+
+* Table of content :toc:
+- [[#dev-commands-to-know][Dev commands to know]]
+
+* Dev commands to know
+To see if service is running and stablished a dbus connection
+/NOTE: The ~--user~ flag ensures you are looking at a session process and not a system process
+#+begin_src sh
+busctl --user introspect org.green_sharkd.GreenSharkd /org/green_sharkd/State
+#+end_src
+
+#+begin_src sh
+busctl --user call org.green_sharkd.GreenSharkd /org/green_sharkd/State org.green_sharkd.Commands AddTransaction ds 10.00 'Oat flat white without sprinkles'
+ #+end_src
+
+#+begin_src sh
+ busctl --user get-property org.green_sharkd.GreenSharkd /org/green_sharkd/State org.green_sharkd.Commands Transactions
+ #+end_src

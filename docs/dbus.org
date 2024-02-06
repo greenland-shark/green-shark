@@ -1,0 +1,95 @@
+#+title: Dbus
+#+description: Finding on DBus
+
+* DBus overview :toc:
+- [[#key-components][Key components]]
+  - [[#object-paths][Object paths]]
+  - [[#interfaces][Interfaces]]
+  - [[#signiture-strings][Signiture Strings]]
+  - [[#methods][Methods]]
+  - [[#signals][Signals]]
+  - [[#bus-names][Bus names]]
+  - [[#example-xml-specification][Example xml specification]]
+- [[#learning-resources][Learning resources]]
+
+* Key components
+** Object paths
+Object paths look like a standard unix file path. The difference between the two being that an object path may only contain numbers, letters, underscores and the ~/~ character.
+** Interfaces
+The interface defines the methods and signal supported by the Dbus objects. It may be hardcoded into an application or queried at runtime.
+Naming convention of the interface is a reversed DNS domain name, and looks something like ~com.green_shark.green_sharkd~.
+Interface names must begin with a letter and can contain only letters, numbers and underscores.
+** Signiture Strings
+DBus uses a string based type encoding to describe the number and types of arguments required by methods and signals.
+Table of fundamental types and their encoding character
+| Character | Code Data Type                  |
+|-----------+---------------------------------|
+| y         | 8-bit unsigned integer          |
+| b         | boolean                         |
+| n         | 16-bit signed integer           |
+| q         | 16-bit unsigned integer         |
+| i         | 32-bit signed integer           |
+| u         | 32-bit unsigned integer         |
+| x         | 64-bit signed integer           |
+| t         | 64-bit unsigned integer         |
+| d         | double-precision floating point |
+| s         | UTF-8 string (no nul character) |
+| o         | DBus object Path String         |
+| g         | DBus signature path string      |
+| a         | array                           |
+| (         | structure start                 |
+| )         | structure end                   |
+| v         | variant type                    |
+| {         | dictionary/map start            |
+| }         | dictionary/map end              |
+| h         | unix file descriptor            |
+
+** Methods
+DBus methods may accept any number of arguments and may return any number of values, including none. When it returns no value a method return message is still sent to the the application calling it so it can know that it has succesfully completed.
+** Signals
+DBus signals provide a one to many, publish-subscribe mechanism. The main difference between methods and signals is that a signals are asynchronus and may be emitted by DBus at any time.
+Signals will not be sent to any clients by default. Client applications must register their interest in a signal explicitly.
+** Bus names
+There are two different types of bus names. *unique* and *well-known*. Unique bus names are assigned by the bus to each client connection, they begin with a ~:~ and they are guaranteed to be unique.
+DBus clients may request additional, *well-known* bus names in order to offer their services under names that are agreed upon by convention.
+** Example xml specification
+#+begin_src xml
+<!DOCTYPE node PUBLIC
+    "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+    "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd" >
+<node xmlns:doc="http://www.freedesktop.org/dbus/1.0/doc.dtd">
+  <interface name="com.example.MyService1.InterestingInterface">
+    <method name="AddContact">
+      <arg name="name" direction="in" type="s">
+        <doc:doc><doc:summary>Name of new contact</doc:summary></doc:doc>
+      </arg>
+      <arg name="email" direction="in" type="s">
+        <doc:doc><doc:summary>E-mail address of new contact</doc:summary></doc:doc>
+      </arg>
+      <arg name="id" direction="out" type="u">
+        <doc:doc><doc:summary>ID of newly added contact</doc:summary></doc:doc>
+      </arg>
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            Adds a new contact to the address book with their name and
+            e-mail address.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </method>
+  </interface>
+</node>
+#+end_src
+
+
+
+* Learning resources
+- https://develop.kde.org/docs/features/d-bus/
+- https://dbus2.github.io/zbus/introduction.html
+- https://dbus.freedesktop.org/doc/dbus-api-design.html
+- https://dbus.freedesktop.org/doc/dbus-api-design.html
+- https://pythonhosted.org/txdbus/dbus_overview.html
+- https://www.freedesktop.org/wiki/IntroductionToDBus/
+- https://dbus.freedesktop.org/doc/dbus-specification.html
+- https://dbus.freedesktop.org/doc/dbus-tutorial.html
