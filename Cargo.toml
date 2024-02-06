@@ -15,10 +15,9 @@ name = "green-shark"
 [dependencies]
 notify-rust = "4.10.0"
 signal-hook = "0.3.17"
-dbus = "0.9.7"
-dbus-crossroads = "0.5.2"
 zbus = {version = "3", default-features = false, features = ["tokio"]}
 tokio = {version = "1", features = ["full"]}
 futures-util = "0.3.30"
 futures = "0.3.30"
 event-listener = "4.0.3"
+chrono = "0.4.33"
