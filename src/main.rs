@@ -54,28 +54,10 @@ impl State {
         format!("Transactions: {:?}", self)
     }
 
-    // async fn go_away(&self,
-    // #[zbus(signal_context)]
-    // ctxt: SignalContext<'_>,
-    // ) -> fdo::Result<()> {
-    //     Self::greeted_everyone(&ctxt).await?;
-    //     self.done.notify(1);
-
-    //     Ok(())
-    // }
-
     #[dbus_interface(property)]
     async fn transactions(&self) -> String {
         format!("{:?}", self.transactions)
     }
-
-    // #[dbus_interface(property)]
-    // async fn set_greeter_name(&mut self, name: String) {
-    //     self.name = name;
-    // }
-
-    // #[dbus_interface(signal)]
-    // async fn greeted_everyone(ctxt: &SignalContext<'_>) -> Result<()>;
 }
 
 #[tokio::main]
