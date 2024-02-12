@@ -20,12 +20,17 @@ Contribution is always welcome, even if it is just well-meaning feedback.
 
 ### Tone
 
-- When writing documentation or comments, please write as though you are explaining something to your mum...
+When writing documentation or comments, please write as though you are explaining something to your mum...
+
+### Writing comments & code
+
+- Comments can be helpful when describing something which has been optimised.
+- Often comments can be avoided through rewriting code to be more readable.
 - Useful comments explain 'why' something happens.
 - TODO comments should reference a ticket to carry out the thing TO-DO.
-- 'What' code does should speak for itself by way of following community conventions
+- 'What' code does should speak for itself by way of following community conventions.
 - Prefer meaningful variable and function names, etc.
-- If you are strugling to hold in your head all that is happening in a function, consider splitting out behaviour.
+- If you are struggling to hold in your head all that is happening in a function, consider splitting out behaviour.
 
 ### Testing
 
