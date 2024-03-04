@@ -9,7 +9,11 @@ edition = "2021"
 path = "src/lib/mod.rs"
 
 [[bin]]
-path = "src/main.rs"
+path = "src/daemon/main.rs"
+name = "green-sharkd"
+
+[[bin]]
+path = "src/client/main.rs"
 name = "green-shark"
 
 [dependencies]
