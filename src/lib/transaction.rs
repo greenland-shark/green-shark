@@ -1,4 +1,5 @@
 use chrono::Utc;
+use rand::Rng;
 
 #[derive(Debug)]
 pub enum Currency {
@@ -45,7 +46,9 @@ impl Transaction {
         end_date: Option<i64>,
     ) -> Self {
         let now = Utc::now();
-        let uid = now.timestamp();
+        let mut rng = rand::thread_rng();
+        let n: i64 = rng.gen_range(0..100);
+        let uid = now.timestamp() + n;
         let now = now.timestamp();
         Self {
             amount,
