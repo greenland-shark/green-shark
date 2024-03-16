@@ -1,4 +1,6 @@
+use crate::frequency::Frequency;
 use chrono::Utc;
+
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 
@@ -7,22 +9,6 @@ pub enum Currency {
     NZD,
     GBP,
     BRL,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub enum Frequency {
-    OneOff(i64),
-    // Monthly(u8),
-    // Weekly(u8),
-    // Yearly((u8, u8)),
-}
-
-impl Frequency {
-    pub fn one_off() -> Self {
-        let now = Utc::now();
-        let now = now.timestamp();
-        Self::OneOff(now)
-    }
 }
 
 type Amount = (Currency, f32);
