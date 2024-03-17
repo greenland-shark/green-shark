@@ -1,7 +1,6 @@
-use crate::{
-    error::Error,
-    transaction::{Currency, Frequency, Transaction},
-};
+use crate::error::Error;
+use crate::frequency::Frequency;
+use crate::transaction::{Currency, Transaction};
 use serde::{Deserialize, Serialize};
 use serde_json;
 use zbus::dbus_interface;
