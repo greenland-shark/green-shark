@@ -3,6 +3,7 @@ use crate::{
     transaction::{Currency, Frequency, Transaction},
 };
 use serde::{Deserialize, Serialize};
+use serde_json;
 use zbus::dbus_interface;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -54,6 +55,7 @@ impl State {
 
 #[dbus_interface(name = "org.green_sharkd.Commands")]
 impl State {
+    // async fn add_transaction(&mut self, amount: f32, name: &str, label: &str) -> String {
     async fn add_transaction(&mut self, amount: f32, name: &str, label: &str) -> String {
         println!("adding transaction");
         let label = if label.is_empty() {
@@ -71,13 +73,19 @@ impl State {
             frequency,
             end_date,
         );
-        self.outgoings.push(transaction);
+
+        if transaction.amount_value().is_sign_negative() {
+            self.outgoings.push(transaction);
+        } else {
+            self.incomes.push(transaction);
+        }
 
         format!("Transactions: {:?}", self)
     }
 
     #[dbus_interface(property)]
     async fn outgoings(&self) -> String {
+        // serde_json::
         format!("{:?}", self.outgoings)
     }
 }

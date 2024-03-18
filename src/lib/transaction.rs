@@ -65,4 +65,8 @@ impl Transaction {
     pub fn id(&self) -> i64 {
         self.id
     }
+
+    pub fn amount_value(&self) -> f32 {
+        self.amount.1
+    }
 }
