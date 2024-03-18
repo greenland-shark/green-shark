@@ -18,7 +18,7 @@ fn uids_are_unique() {
     );
 
     assert_ne!(
-        transaction_1.id(), transaction_1.start_date(),
+        transaction_1.id(), transaction_1.start_date,
         "UID shouldn't match start_date because start_date can be the same for multiple transactions."
         );
     assert_ne!(
