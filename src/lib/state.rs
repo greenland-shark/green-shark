@@ -55,14 +55,15 @@ impl State {
 
 #[dbus_interface(name = "org.green_sharkd.Commands")]
 impl State {
-    // async fn add_transaction(&mut self, amount: f32, name: &str, label: &str) -> String {
     async fn add_transaction(&mut self, amount: f32, name: &str, label: &str) -> String {
         println!("adding transaction");
+
         let label = if label.is_empty() {
             None
         } else {
             Some(label.to_string())
         };
+
         let sterling_amount = (Currency::GBP, amount);
         let frequency = Frequency::one_off();
         let end_date = None;
@@ -84,8 +85,10 @@ impl State {
     }
 
     #[dbus_interface(property)]
-    async fn outgoings(&self) -> String {
-        // serde_json::
-        format!("{:?}", self.outgoings)
+    /// Returns complete state as a JSON string.
+    async fn transactions(&self) -> String {
+        serde_json::to_string(self)
+            .map_err(Error::SerdeJsonError)
+            .unwrap()
     }
 }
