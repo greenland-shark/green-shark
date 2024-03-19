@@ -10,12 +10,36 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
+  # TODO Build_Test
+  build_test:
+    name: Build & Test
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4.1.1
+
       - name: Build
         run: cargo build --verbose
+
       - name: Run tests
         run: cargo test --verbose
+
+  release:
+    name: Release
+    needs: [build_test]
+    runs-on: ubuntu-latest
+
+    steps:
+      # TODO Validate project version++
+      - name: Get project version
+        run: echo "Get version"
+
+      # TODO Release Version increase required to deploy a change to code
+      - name: Tag release with package version
+        run: echo "Tag release version"
+
+      # TODO Merge_PR pending fresh approval of changes
+      - name: Merge PR
+        run: |
+          echo "Merge PR"
+          echo "Second line"
