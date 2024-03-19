@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@v4
 
       - name: Build
         run: cargo build --verbose
@@ -26,8 +26,8 @@ jobs:
 
   release:
     name: Release
-    needs: [build_test]
     runs-on: ubuntu-latest
+    needs: [build_test]
 
     steps:
       # TODO Validate project version++
@@ -41,5 +41,5 @@ jobs:
       # TODO Merge_PR pending fresh approval of changes
       - name: Merge PR
         run: |
-          echo "Merge PR"
-          echo "Second line"
+          echo "Merge PR" 
+          echo $(gh label list)
