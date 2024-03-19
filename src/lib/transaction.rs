@@ -38,6 +38,7 @@ pub struct Transaction {
     pub end_date: Option<i64>,
 }
 
+// impl from trait for transaction
 impl Transaction {
     pub fn new(
         amount: Amount,

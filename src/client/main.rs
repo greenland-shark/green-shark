@@ -1,36 +1,72 @@
-use clap::{Args, Parser, Subcommand};
-use termimad::ansi;
+use chrono::{NaiveDateTime, ParseResult, Utc};
+use green_shark::transaction::{Currency, Frequency};
+//move cli stuff to lib
 
+use {
+    clap::{Args, Parser, Subcommand},
+    green_shark::transaction::Transaction,
+};
 fn main() {
     let args = CliArgs::parse();
+
+    if let Some(transaction) = extactTransactionFromArgs(args) {
+        println!("{:?}", transaction);
+    };
+
     println!("Hello, world!");
 }
 
+fn extactTransactionFromArgs(args: CliArgs) -> Option<Transaction> {
+    match args.subject {
+        Subject::Income(action) => {
+            if let ActionType::Create(transaction_values) = action.action {
+                let amount = (Currency::GBP, transaction_values.amount);
+                let name = transaction_values.name;
+                let label = transaction_values.label;
+                let frequency = transaction_values
+                    .start_date
+                    .map(|mut sd| {
+                        sd.push_str(" 00:00:00");
+                        NaiveDateTime::parse_from_str(&sd, "%yyyy/mm/dd")
+                            .map(|op| Frequency::OneOff(op.timestamp()))
+                            .ok()
+                    })
+                    .unwrap_or(None)
+                    .unwrap_or(Frequency::OneOff(Utc::now().timestamp()));
+                Some(Transaction::new(amount, name, label, frequency, None))
+            } else {
+                None
+            }
+        }
+        Subject::Outcome(action) => {
+            if let ActionType::Create(transaction_values) = action.action {
+                let amount = (Currency::GBP, transaction_values.amount);
+                let name = transaction_values.name;
+                let label = transaction_values.label;
+                let frequency = transaction_values
+                    .start_date
+                    .map(|mut sd| {
+                        sd.push_str(" 00:00:00");
+                        NaiveDateTime::parse_from_str(&sd, "%yyyy/mm/dd")
+                            .map(|op| Frequency::OneOff(op.timestamp()))
+                            .ok()
+                    })
+                    .unwrap_or(None)
+                    .unwrap_or(Frequency::OneOff(Utc::now().timestamp()));
+                Some(Transaction::new(amount, name, label, frequency, None))
+            } else {
+                None
+            }
+        }
+    }
+}
+
 #[derive(Parser, Debug)]
-#[command(version, author, about, disable_help_flag = true)]
+#[command(version, author, about)]
 pub struct CliArgs {
-    /// Print help information
-    #[arg(long, short)]
-    pub help: bool,
     #[command(subcommand)]
     /// what subject you want to perform an aciton on
     pub subject: Subject,
-}
-
-impl CliArgs {
-    pub fn print_help(&self) {
-        let mut printer = clap_help::Printer::new(Args::command())
-            .with("introduction", "hahah")
-            .with("options", clap_help::TEMPLATE_OPTIONS_MERGED_VALUE)
-            .without("author");
-        let skin = printer.skin_mut();
-        skin.headers[0].compound_style.set_fg(ansi(204));
-        skin.bold.set_fg(ansi(204));
-        skin.italic = termimad::CompoundStyle::with_fg(ansi(204));
-
-        printer.template_keys_mut().push("examples");
-        printer.set_template("examples", EXAMPLES_TEMPLATE);
-    }
 }
 
 #[derive(Subcommand, Clone, Debug)]
@@ -87,14 +123,14 @@ pub struct FilterFlags {
 pub struct TransactionValues {
     /// The amount that the transaction is
     #[arg[long, value_name = "AMOUNT"]]
-    pub amount: i32,
+    pub amount: f32,
     /// Name of the transaction, e.g "Coffee"
     #[arg[long, value_name = "NAME"]]
     pub name: String,
     /// The label to categorise the transaction, e.g "Leisure"
     #[arg[long, value_name = "LABEL"]]
-    pub label: String,
-    /// The start date of the transaction, this will default to current date time
+    pub label: Option<String>,
+    /// The start date of the transaction in the format of yyyy/mm/dd, this will default to current date time
     #[arg[long, value_name = "START DATE"]]
     pub start_date: Option<String>,
     /// The end date of transaction, this will default to null for none recurring transactions
@@ -142,39 +178,3 @@ pub struct TransactionValues {
 // |                      |
 // |   projection         |
 // ------------------------
-/// A bacon launch example to display in the --help message
-pub struct Example {
-    pub title: &'static str,
-    pub cmd: &'static str,
-}
-
-pub static EXAMPLES_TEMPLATE: &str = "
-**Examples:**
-
-${examples
-*${example-number})* ${example-title}: `${example-cmd}`
-}
-";
-
-pub static EXAMPLES: &[Example] = &[
-    Example {
-        title: "Start with the default job",
-        cmd: "bacon",
-    },
-    Example {
-        title: "Start with a specific job",
-        cmd: "bacon clippy",
-    },
-    Example {
-        title: "Start with features",
-        cmd: "bacon --features clipboard",
-    },
-    Example {
-        title: "Start a specific job on another path",
-        cmd: "bacon ../broot test",
-    },
-    Example {
-        title: "Start in summary mode",
-        cmd: "bacon -s",
-    },
-];
