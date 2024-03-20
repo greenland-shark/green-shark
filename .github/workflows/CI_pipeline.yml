@@ -11,29 +11,37 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  test:
+  release:
+    name: Release & Merge
     runs-on: ubuntu-latest
+    # needs: [build_test]
     steps:
       - uses: actions/checkout@v4
       - name: yq - portable yaml processor
         uses: mikefarah/yq@v4.42.1
 
       - name: Extract Project Version
-        run: |
-          # TODO else gh create release $version
-
-          echo "PROJECT_VERSION=$(yq '.package.version' $PWD/Cargo.toml)" >> $GITHUB_ENV
+        run: echo "PROJECT_VERSION=$(yq '.package.version' $PWD/Cargo.toml)" >> $GITHUB_ENV
 
       - name: Check existing tags
         run: |
+          # TODO ?? Guard against case CHANGELOG hasn't changed since previous release
           if [[ $(git tag -l $PROJECT_VERSION) ]]; 
           then
             echo "Release $PROJECT_VERSION already exists. Please increment package version in Cargo.toml"
             exit 1
           else
-            # TODO Tag commit
             echo "Tagging release $PROJECT_VERSION"
+            git tag -a "v$PROJECT_VERSION" -F ./CHANGELOG.md
+            # TODO push to remote
           fi
+
+      # TODO Merge_PR pending fresh approval of changes
+      - name: Merge PR
+        run: |
+          echo "Merging PR"
+          # TODO Uncomment me when ready
+          # gh pr merge --auto -d
 
   build_test:
     name: Build & Test
@@ -47,24 +55,3 @@ jobs:
 
       - name: Run tests
         run: cargo test --verbose
-
-  release:
-    name: Release
-    runs-on: ubuntu-latest
-    needs: [build_test]
-
-    steps:
-      - uses: actions/checkout@v4
-      # TODO Validate project version++
-      - name: Get project version
-        run: echo "Get version"
-
-      # TODO Release Version increase required to deploy a change to code
-      - name: Tag release with package version
-        run: echo "Tag release version"
-
-      # TODO Merge_PR pending fresh approval of changes
-      - name: Merge PR
-        run: |
-          echo "Merge PR" 
-          # echo $(gh pr merge --auto -d)
