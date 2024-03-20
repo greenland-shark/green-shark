@@ -26,7 +26,7 @@ jobs:
 
       - name: Check existing tags
         run: |
-          if [[ -z $(git tag -l $PROJECT_VERSION) ]]; 
+          if [[ $(git tag -l $PROJECT_VERSION) ]]; 
           then
             echo "Release $PROJECT_VERSION already exists. Please increment package version in Cargo.toml"
             exit 1
