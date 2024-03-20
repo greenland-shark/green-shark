@@ -15,6 +15,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: yq - portable yaml processor
+        uses: mikefarah/yq@v4.42.1
+
       - name: Merge PR
         run: |
           # TODO Get list of releases
@@ -22,7 +25,7 @@ jobs:
           # TODO if version already exists in releases; exit 1
           # TODO else gh create release $version
           #
-          echo $(which brew)
+          echo $(yq ".package.version" $PWD/Cargo.toml)
           echo "Merge PR" 
           echo $(gh label list)
 
