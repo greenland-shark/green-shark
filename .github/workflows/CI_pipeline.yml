@@ -18,16 +18,24 @@ jobs:
       - name: yq - portable yaml processor
         uses: mikefarah/yq@v4.42.1
 
-      - name: Merge PR
+      - name: Extract Project Version
         run: |
           # TODO Get list of releases
           # TODO Get version from cargo.toml
           # TODO if version already exists in releases; exit 1
           # TODO else gh create release $version
           #
-          echo $(yq ".package.version" $PWD/Cargo.toml)
-          echo "Merge PR" 
-          echo $(gh label list)
+          echo "PROJECT_VERSION=$(yq '.package.version' $PWD/Cargo.toml)" >> $GITHUB_ENV
+
+        name: Check existing tags
+        run: |
+          if [[ $(git tag -l $PROJECT_VERSION) ]]; then
+            echo "Release $PROJECT_VERSION already exists. Please increment package version in Cargo.toml"
+            exit 1
+          else
+            # Tag commit
+            echo "Tagging release $PROJECT_VERSION"
+          fi
 
   # TODO Build_Test
   build_test:
