@@ -16,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - 
-    name: yq - portable yaml processor
+        name: yq - portable yaml processor
         uses: mikefarah/yq@v4.42.1
 
       - name: Extract Project Version
@@ -27,7 +27,8 @@ jobs:
 
         name: Check existing tags
         run: |
-          if [[ $(git tag -l $PROJECT_VERSION) ]]; then
+          if [[ $(git tag -l $PROJECT_VERSION) ]]; 
+          then
             echo "Release $PROJECT_VERSION already exists. Please increment package version in Cargo.toml"
             exit 1
           else
