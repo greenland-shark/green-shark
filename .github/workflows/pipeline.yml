@@ -43,7 +43,7 @@ jobs:
       - name: Extract Project Version
         run: echo "PROJECT_VERSION=v$(yq '.package.version' $PWD/Cargo.toml)" >> $GITHUB_ENV
 
-      - name: Check existing tags
+      - name: Tag release
         run: |
           CHECK_TAG_EXISTS=$(git tag -l $PROJECT_VERSION)
           CHANGELOG_CHANGES=$(git diff --merge-base origin/main -- $PWD/.github/workflows/CI_pipeline.yml)
@@ -61,4 +61,5 @@ jobs:
       - name: Merge PR
         run: |
           echo "Merging PR"
-          gh pr merge --auto -d
+          BRANCH=$(git rev-parse --abbrev-ref HEAD)
+          gh pr merge $BRANCH --auto -d
