@@ -21,19 +21,21 @@ jobs:
         uses: mikefarah/yq@v4.42.1
 
       - name: Extract Project Version
-        run: echo "PROJECT_VERSION=$(yq '.package.version' $PWD/Cargo.toml)" >> $GITHUB_ENV
+        run: echo "PROJECT_VERSION=v$(yq '.package.version' $PWD/Cargo.toml)" >> $GITHUB_ENV
 
       - name: Check existing tags
         run: |
-          # TODO ?? Guard against case CHANGELOG hasn't changed since previous release
-          if [[ $(git tag -l $PROJECT_VERSION) ]]; 
+          CHECK_TAG_EXISTS=$(git tag -l $PROJECT_VERSION)
+          CHANGELOG_CHANGES=$(git diff --merge-base origin/main ./.github/workflows/CI_pipeline.yml)
+          if [[ -z $CHECK_TAG_EXISTS && $CHANGELOG_CHANGES ]]; 
           then
+            echo "Tagging release $PROJECT_VERSION"
+            # git tag -a "$PROJECT_VERSION" -F ./CHANGELOG.md
+            # TODO push to remote
+            # git push origin "$PROJECT_VERSION"
+          else
             echo "Release $PROJECT_VERSION already exists. Please increment package version in Cargo.toml"
             exit 1
-          else
-            echo "Tagging release $PROJECT_VERSION"
-            git tag -a "v$PROJECT_VERSION" -F ./CHANGELOG.md
-            # TODO push to remote
           fi
 
       # TODO Merge_PR pending fresh approval of changes
