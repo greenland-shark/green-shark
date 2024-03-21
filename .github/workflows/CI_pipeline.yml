@@ -25,8 +25,8 @@ jobs:
 
       - name: Check existing tags
         run: |
-          CHECK_TAG_EXISTS=echo "$(git tag -l $PROJECT_VERSION)"
-          CHANGELOG_CHANGES=echo "$(git diff --merge-base origin/main -- $PWD/.github/workflows/CI_pipeline.yml)"
+          CHECK_TAG_EXISTS=$(git tag -l $PROJECT_VERSION)
+          CHANGELOG_CHANGES=$(git diff --merge-base origin/main -- $PWD/.github/workflows/CI_pipeline.yml)
           if [[ -z $CHECK_TAG_EXISTS && $CHANGELOG_CHANGES ]]; 
           then
             echo "Tagging release $PROJECT_VERSION"
