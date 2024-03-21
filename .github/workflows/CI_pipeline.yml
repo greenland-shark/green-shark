@@ -22,7 +22,7 @@ jobs:
           fetch-tags: "true"
 
       - name: Git runner credentials
-        uses: "./.github/workflows/git_creds.yml"
+        uses: "./.github/workflows/git_creds"
 
       - name: yq - portable yaml processor
         uses: mikefarah/yq@v4.42.1
