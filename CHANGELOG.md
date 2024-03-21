@@ -5,6 +5,8 @@ Changelog
 :rocket: **New Features**
 First Release
 
+- Add build pipeline tagged release
+
 :boom: **Breaking Changes**
 N/A
 
