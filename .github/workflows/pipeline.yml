@@ -61,5 +61,5 @@ jobs:
       - name: Merge PR
         run: |
           echo "Merging PR"
-          BRANCH=$(git rev-parse --abbrev-ref HEAD)
+          BRANCH=$(git branch --show-current)
           gh pr merge $BRANCH --auto -d
