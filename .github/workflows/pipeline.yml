@@ -1,0 +1,65 @@
+name: Rust
+
+on: push
+
+env:
+  GH_TOKEN: ${{ github.token }}
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build_test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: cargo build --verbose --release
+
+      - name: Run tests
+        run: cargo test --verbose
+
+  release:
+    name: Release & Merge
+    runs-on: ubuntu-latest
+    needs: [build_test]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: "0"
+          fetch-tags: "true"
+
+      - name: Git runner credentials
+        uses: "./.github/workflows/git_creds"
+
+      - name: yq - portable yaml processor
+        uses: mikefarah/yq@v4.42.1
+
+      - name: Extract Project Version
+        run: echo "PROJECT_VERSION=v$(yq '.package.version' $PWD/Cargo.toml)" >> $GITHUB_ENV
+
+      - name: Extract branch name
+        id: extract_branch
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+
+      - name: Tag release
+        run: |
+          CHECK_TAG_EXISTS=$(git tag -l $PROJECT_VERSION)
+          CHANGELOG_CHANGES=$(git diff --merge-base origin/main -- $PWD/.github/workflows/CI_pipeline.yml)
+          if [[ -z $CHECK_TAG_EXISTS && $CHANGELOG_CHANGES ]]; 
+          then
+            echo "Tagging release $PROJECT_VERSION" 
+            # TODO Fix markdown - Currently plops CHANGELOG into the tagged as plain text so no nice emojis or markdown render
+            git tag -a $PROJECT_VERSION -F ./CHANGELOG.md
+            git push origin $PROJECT_VERSION
+          else
+            echo "Release $PROJECT_VERSION already exists. Please increment package version in Cargo.toml"
+            exit 1
+          fi
+
+      - name: Merge PR
+        run: |
+          echo "Merging PR"
+          BRANCH=$(git branch --show-current)
+          gh pr merge ${{ steps.extract_branch.outputs.branch }} --auto -d
