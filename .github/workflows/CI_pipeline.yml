@@ -21,6 +21,9 @@ jobs:
           fetch-depth: "0"
           fetch-tags: "true"
 
+      - name: Git runner credentials
+        uses: "./git_creds.yml"
+
       - name: yq - portable yaml processor
         uses: mikefarah/yq@v4.42.1
 
@@ -33,7 +36,7 @@ jobs:
           CHANGELOG_CHANGES=$(git diff --merge-base origin/main -- $PWD/.github/workflows/CI_pipeline.yml)
           if [[ -z $CHECK_TAG_EXISTS && $CHANGELOG_CHANGES ]]; 
           then
-            echo "Tagging release $PROJECT_VERSION"
+            echo "Tagging release $PROJECT_VERSION" 
             git tag -a $PROJECT_VERSION -F ./CHANGELOG.md
             git push origin $PROJECT_VERSION
           else
