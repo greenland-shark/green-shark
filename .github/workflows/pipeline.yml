@@ -11,10 +11,23 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  build_test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: cargo build --verbose --release
+
+      - name: Run tests
+        run: cargo test --verbose
+
   release:
     name: Release & Merge
     runs-on: ubuntu-latest
-    # needs: [build_test]
+    needs: [build_test]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -37,6 +50,7 @@ jobs:
           if [[ -z $CHECK_TAG_EXISTS && $CHANGELOG_CHANGES ]]; 
           then
             echo "Tagging release $PROJECT_VERSION" 
+            # TODO Fix markdown - Currently plops CHANGELOG into the tagged as plain text so no nice emojis or markdown render
             git tag -a $PROJECT_VERSION -F ./CHANGELOG.md
             git push origin $PROJECT_VERSION
           else
@@ -44,22 +58,7 @@ jobs:
             exit 1
           fi
 
-      # TODO Merge_PR pending fresh approval of changes
       - name: Merge PR
         run: |
           echo "Merging PR"
-          # TODO Uncomment me when ready
-          # gh pr merge --auto -d
-
-  build_test:
-    name: Build & Test
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Build
-        run: cargo build --verbose --release
-
-      - name: Run tests
-        run: cargo test --verbose
+          gh pr merge --auto -d
