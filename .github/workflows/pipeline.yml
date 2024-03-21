@@ -7,18 +7,6 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  get_branch:
-    name: poop
-    runs-on: ubuntu-latest
-    steps:
-      - name: Extract branch name
-        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
-        id: extract_branch
-      - name: test
-        run: |
-          # Test
-          echo "::debug::branchio: ${{ steps.extract_branch.outputs.branch }}"
-
   build_test:
     name: Build & Test
     runs-on: ubuntu-latest
@@ -51,6 +39,10 @@ jobs:
       - name: Extract Project Version
         run: echo "PROJECT_VERSION=v$(yq '.package.version' $PWD/Cargo.toml)" >> $GITHUB_ENV
 
+      - name: Extract branch name
+        id: extract_branch
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+
       - name: Tag release
         run: |
           CHECK_TAG_EXISTS=$(git tag -l $PROJECT_VERSION)
@@ -70,4 +62,4 @@ jobs:
         run: |
           echo "Merging PR"
           BRANCH=$(git branch --show-current)
-          gh pr merge $BRANCH --auto -d
+          gh pr merge ${{ steps.extract_branch.outputs.branch }} --auto -d
