@@ -6,14 +6,14 @@ fn uids_are_unique() {
         (Currency::GBP, 10.5),
         "out1".to_string(),
         Some("drink".to_string()),
-        Frequency::one_off(),
+        Frequency::one_off_now(),
         None,
     );
     let transaction_2 = Transaction::new(
         (Currency::GBP, 10.5),
         "out1".to_string(),
         Some("drink".to_string()),
-        Frequency::one_off(),
+        Frequency::one_off_now(),
         None,
     );
 

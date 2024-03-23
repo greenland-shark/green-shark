@@ -10,7 +10,7 @@ pub enum Frequency {
 }
 
 impl Frequency {
-    pub fn one_off() -> Self {
+    pub fn one_off_now() -> Self {
         let now = Utc::now();
         let now = now.timestamp();
         Self::OneOff(now)

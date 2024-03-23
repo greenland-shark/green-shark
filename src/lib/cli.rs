@@ -4,34 +4,6 @@ use {
     clap::{Args, Parser, Subcommand},
 };
 
-fn extract_transaction_from_action(action: Action) -> Option<Transaction> {
-    if let ActionType::Create(transaction_values) = action.action {
-        let amount = Amount::GBP(transaction_values.amount);
-        let name = transaction_values.name;
-        let label = transaction_values.label;
-        let frequency = transaction_values
-            .start_date
-            .map(|mut sd| {
-                sd.push_str(" 00:00:00");
-                NaiveDateTime::parse_from_str(&sd, "%yyyy/mm/dd")
-                    .map(|op| Frequency::OneOff(op.timestamp()))
-                    .ok()
-            })
-            .unwrap_or(None)
-            .unwrap_or(Frequency::OneOff(Utc::now().timestamp()));
-        Some(Transaction::new(amount, name, label, frequency, None))
-    } else {
-        None
-    }
-}
-
-pub fn extact_transaction_from_args(args: CliArgs) -> Option<Transaction> {
-    match args.subject {
-        Subject::Income(action) => extract_transaction_from_action(action),
-        Subject::Outcome(action) => extract_transaction_from_action(action),
-    }
-}
-
 #[derive(Parser, Debug)]
 #[command(version, author, about)]
 pub struct CliArgs {
@@ -107,4 +79,44 @@ pub struct TransactionValues {
     /// The end date of transaction, this will default to null for none recurring transactions
     #[arg[long, value_name = "END DATE"]]
     pub end_date: Option<String>,
+}
+
+pub enum ExtractTransactionError {
+    NotCreateAction,
+    FailedToParse(String),
+}
+
+type ExtractResult = Result<Transaction, ExtractTransactionError>;
+
+impl TryFrom<CliArgs> for Transaction {
+    type Error = ExtractTransactionError;
+
+    /// If CliArgs is a create action return a Result of Transaction
+    /// else return an Error that could be NotCreateAction or FailedToParse(String)
+    fn try_from(args: CliArgs) -> ExtractResult {
+        match args.subject {
+            Subject::Income(action) => extract_transaction_from_create(action),
+            Subject::Outcome(action) => extract_transaction_from_create(action),
+        }
+    }
+}
+
+fn extract_transaction_from_create(action: Action) -> ExtractResult {
+    if let ActionType::Create(transaction_values) = action.action {
+        let amount = Amount::GBP(transaction_values.amount);
+        let name = transaction_values.name;
+        let label = transaction_values.label;
+        let frequency = match transaction_values.start_date {
+            Some(date) => {
+                let date_time = date + " 00:00:00";
+                NaiveDateTime::parse_from_str(&date_time, "%Y/%m/%d %H:%M:%S")
+                    .map(|date_time| Frequency::OneOff(date_time.timestamp()))
+                    .map_err(|err| ExtractTransactionError::FailedToParse(err.to_string()))?
+            }
+            None => Frequency::one_off_now(),
+        };
+        Ok(Transaction::new(amount, name, label, frequency, None))
+    } else {
+        Err(ExtractTransactionError::NotCreateAction)
+    }
 }
