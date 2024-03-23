@@ -1,14 +1,13 @@
-// move cli stuff to lib
-use {
-    clap::Parser,
-    green_shark::cli::{self, CliArgs},
-};
+use green_shark::transaction::Transaction;
+
+use {clap::Parser, green_shark::cli::CliArgs};
 
 fn main() {
     let args = CliArgs::parse();
 
-    if let Some(transaction) = cli::extact_transaction_from_args(args) {
-        println!("{:?}", transaction);
+    match Transaction::try_from(args) {
+        Ok(transaction) => println!("{:?}", transaction),
+        Err(_) => (),
     };
 }
 

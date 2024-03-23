@@ -64,7 +64,7 @@ impl State {
             Some(label.to_string())
         };
         let sterling_amount = Amount::GBP(amount);
-        let frequency = Frequency::one_off();
+        let frequency = Frequency::one_off_now();
         let end_date = None;
         let transaction = Transaction::new(
             sterling_amount,
