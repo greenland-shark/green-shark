@@ -1,5 +1,5 @@
 use zbus::dbus_interface;
-use crate::transaction::{Transaction, Currency, Frequency};
+use crate::transaction::{Transaction, Amount,  Frequency};
 
 #[derive(Debug)]
 pub struct State {
@@ -23,7 +23,7 @@ impl State {
         } else {
             Some(label.to_string())
         };
-        let sterling_amount = (Currency::GBP, amount);
+        let sterling_amount = Amount::GBP(amount);
         let frequency = Frequency::one_off();
         let end_date = None;
         let transaction = Transaction::new(

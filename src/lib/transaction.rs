@@ -2,13 +2,6 @@ use chrono::Utc;
 use rand::Rng;
 
 #[derive(Debug)]
-pub enum Currency {
-    NZD,
-    GBP,
-    BRL,
-}
-
-#[derive(Debug)]
 pub enum Frequency {
     OneOff(i64),
     // Monthly(u8),
@@ -24,7 +17,24 @@ impl Frequency {
     }
 }
 
-type Amount = (Currency, f32);
+#[derive(Debug)]
+pub enum Amount {
+    NZD(f32),
+    GBP(f32),
+    BRL(f32),
+    USD(f32),
+}
+
+impl Amount {
+    pub fn value(&self) -> f32 {
+        match self {
+            Self::NZD(val) => *val,
+            Self::GBP(val) => *val,
+            Self::BRL(val) => *val,
+            Self::USD(val) => *val,
+        }
+    }
+}
 
 #[derive(Debug)]
 pub struct Transaction {
