@@ -1,49 +1,105 @@
-use clap::{Args, Parser, Subcommand, ValueEnum};
+use clap::{Args, Parser, Subcommand};
+use termimad::ansi;
 
 fn main() {
-    let args = Cli::parse();
+    let args = CliArgs::parse();
     println!("Hello, world!");
 }
 
 #[derive(Parser, Debug)]
-#[command(version, about)]
-struct Cli {
+#[command(version, author, about, disable_help_flag = true)]
+pub struct CliArgs {
+    /// Print help information
+    #[arg(long, short)]
+    pub help: bool,
     #[command(subcommand)]
-    subject: Subject,
+    /// what subject you want to perform an aciton on
+    pub subject: Subject,
+}
+
+impl CliArgs {
+    pub fn print_help(&self) {
+        let mut printer = clap_help::Printer::new(Args::command())
+            .with("introduction", "hahah")
+            .with("options", clap_help::TEMPLATE_OPTIONS_MERGED_VALUE)
+            .without("author");
+        let skin = printer.skin_mut();
+        skin.headers[0].compound_style.set_fg(ansi(204));
+        skin.bold.set_fg(ansi(204));
+        skin.italic = termimad::CompoundStyle::with_fg(ansi(204));
+
+        printer.template_keys_mut().push("examples");
+        printer.set_template("examples", EXAMPLES_TEMPLATE);
+    }
 }
 
 #[derive(Subcommand, Clone, Debug)]
-enum Subject {
-    // Doc comment
+pub enum Subject {
+    /// Perform an action on incomes
     Income(Action),
-    // Doc comment
+    /// Perform an action on outgoings
     Outcome(Action),
 }
 
 #[derive(Clone, Debug, Args)]
-struct Action {
+pub struct Action {
     #[command(subcommand)]
-    action: Action_,
+    pub action: ActionType,
 }
 
 #[derive(Clone, Debug, Subcommand)]
-enum Action_ {
-    Add(Flags),
-    Get(Flags),
+pub enum ActionType {
+    /// Create a transaction
+    Create(TransactionValues),
+    /// Retrive one or more transaction
+    Get(Get),
 }
 
 #[derive(Clone, Debug, Args)]
-struct Flags {
-    #[arg[long, value_name = "AMOUNT"]]
-    amount: i32,
+pub struct Get {
+    /// Optional id to retrive from
+    pub id: Option<i64>,
+    #[command(flatten)]
+    /// Flags to filter retrivable transactions
+    pub filter: FilterFlags,
+}
+
+#[derive(Clone, Debug, Args)]
+pub struct FilterFlags {
+    /// Optional number of transactions to retrive, if not set all will be returned
+    #[arg[long, value_name = "NUMBER OF TRANSACTIONS"]]
+    pub number_of_transactions: Option<i32>,
+    /// Filter by name
     #[arg[long, value_name = "NAME"]]
-    name: String,
+    pub name: Option<String>,
+    /// Filter by label
     #[arg[long, value_name = "LABEL"]]
-    label: String,
+    pub label: Option<String>,
+    /// Filter by start date
     #[arg[long, value_name = "START DATE"]]
-    start_date: Option<String>,
+    pub start_date: Option<String>,
+    /// Filter by end date
     #[arg[long, value_name = "END DATE"]]
-    end_date: Option<String>,
+    pub end_date: Option<String>,
+}
+
+#[derive(Clone, Debug, Args)]
+pub struct TransactionValues {
+    /// The amount that the transaction is
+    #[arg[long, value_name = "AMOUNT"]]
+    pub amount: i32,
+    /// Name of the transaction, e.g "Coffee"
+    #[arg[long, value_name = "NAME"]]
+    pub name: String,
+    /// The label to categorise the transaction, e.g "Leisure"
+    #[arg[long, value_name = "LABEL"]]
+    pub label: String,
+    /// The start date of the transaction, this will default to current date time
+    #[arg[long, value_name = "START DATE"]]
+    pub start_date: Option<String>,
+    /// The end date of transaction, this will default to null for none recurring transactions
+    #[arg[long, value_name = "END DATE"]]
+    pub end_date: Option<String>,
 }
 
 // shark [SUBJECT] [Optional [ACTION]] (flags)
@@ -86,3 +142,39 @@ struct Flags {
 // |                      |
 // |   projection         |
 // ------------------------
+/// A bacon launch example to display in the --help message
+pub struct Example {
+    pub title: &'static str,
+    pub cmd: &'static str,
+}
+
+pub static EXAMPLES_TEMPLATE: &str = "
+**Examples:**
+
+${examples
+*${example-number})* ${example-title}: `${example-cmd}`
+}
+";
+
+pub static EXAMPLES: &[Example] = &[
+    Example {
+        title: "Start with the default job",
+        cmd: "bacon",
+    },
+    Example {
+        title: "Start with a specific job",
+        cmd: "bacon clippy",
+    },
+    Example {
+        title: "Start with features",
+        cmd: "bacon --features clipboard",
+    },
+    Example {
+        title: "Start a specific job on another path",
+        cmd: "bacon ../broot test",
+    },
+    Example {
+        title: "Start in summary mode",
+        cmd: "bacon -s",
+    },
+];
