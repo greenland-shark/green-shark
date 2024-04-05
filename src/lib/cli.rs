@@ -1,13 +1,12 @@
 use {
-    crate::transaction::Transaction,
-    crate::transaction::{Currency, Frequency},
+    crate::transaction::{Amount, Frequency, Transaction},
     chrono::{NaiveDateTime, Utc},
     clap::{Args, Parser, Subcommand},
 };
 
 fn extract_transaction_from_action(action: Action) -> Option<Transaction> {
     if let ActionType::Create(transaction_values) = action.action {
-        let amount = (Currency::GBP, transaction_values.amount);
+        let amount = Amount::GBP(transaction_values.amount);
         let name = transaction_values.name;
         let label = transaction_values.label;
         let frequency = transaction_values
