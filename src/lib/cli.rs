@@ -1,6 +1,6 @@
 use {
     crate::transaction::{Amount, Frequency, Transaction},
-    chrono::{NaiveDateTime, Utc},
+    chrono::NaiveDateTime,
     clap::{Args, Parser, Subcommand},
 };
 
@@ -73,10 +73,10 @@ pub struct TransactionValues {
     /// The label to categorise the transaction, e.g "Leisure"
     #[arg[long, value_name = "LABEL"]]
     pub label: Option<String>,
-    /// The start date of the transaction in the format of yyyy/mm/dd, this will default to current date time
+    /// The start date of the transaction in the format of yyyy/mm/dd, this will default to current date time if flag not provided
     #[arg[long, value_name = "START DATE"]]
     pub start_date: Option<String>,
-    /// The end date of transaction, this will default to null for none recurring transactions
+    /// The end date of transaction in the format of yyyy/mm/dd, this will default to null for none recurring transactions
     #[arg[long, value_name = "END DATE"]]
     pub end_date: Option<String>,
 }
@@ -86,14 +86,12 @@ pub enum ExtractTransactionError {
     FailedToParse(String),
 }
 
-type ExtractResult = Result<Transaction, ExtractTransactionError>;
-
 impl TryFrom<CliArgs> for Transaction {
     type Error = ExtractTransactionError;
 
     /// If CliArgs is a create action return a Result of Transaction
     /// else return an Error that could be NotCreateAction or FailedToParse(String)
-    fn try_from(args: CliArgs) -> ExtractResult {
+    fn try_from(args: CliArgs) -> Result<Transaction, ExtractTransactionError> {
         match args.subject {
             Subject::Income(action) => extract_transaction_from_create(action),
             Subject::Outcome(action) => extract_transaction_from_create(action),
@@ -101,7 +99,7 @@ impl TryFrom<CliArgs> for Transaction {
     }
 }
 
-fn extract_transaction_from_create(action: Action) -> ExtractResult {
+fn extract_transaction_from_create(action: Action) -> Result<Transaction, ExtractTransactionError> {
     if let ActionType::Create(transaction_values) = action.action {
         let amount = Amount::GBP(transaction_values.amount);
         let name = transaction_values.name;

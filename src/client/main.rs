@@ -1,6 +1,7 @@
-use green_shark::transaction::Transaction;
-
-use {clap::Parser, green_shark::cli::CliArgs};
+use {
+    clap::Parser,
+    green_shark::{cli::CliArgs, transaction::Transaction},
+};
 
 fn main() {
     let args = CliArgs::parse();
