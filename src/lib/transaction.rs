@@ -2,7 +2,7 @@ use chrono::Utc;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Frequency {
     OneOff(i64),
     // Monthly(u8),
@@ -18,7 +18,7 @@ impl Frequency {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Amount {
     NZD(f32),
     GBP(f32),
@@ -78,6 +78,6 @@ impl Transaction {
     }
 
     pub fn amount_value(&self) -> f32 {
-        self.amount.1
+        self.amount.value()
     }
 }
