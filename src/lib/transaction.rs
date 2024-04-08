@@ -2,14 +2,7 @@ use chrono::Utc;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub enum Currency {
-    NZD,
-    GBP,
-    BRL,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Frequency {
     OneOff(i64),
     // Monthly(u8),
@@ -18,14 +11,31 @@ pub enum Frequency {
 }
 
 impl Frequency {
-    pub fn one_off() -> Self {
+    pub fn one_off_now() -> Self {
         let now = Utc::now();
         let now = now.timestamp();
         Self::OneOff(now)
     }
 }
 
-type Amount = (Currency, f32);
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum Amount {
+    NZD(f32),
+    GBP(f32),
+    BRL(f32),
+    USD(f32),
+}
+
+impl Amount {
+    pub fn value(&self) -> f32 {
+        match self {
+            Self::NZD(val) => *val,
+            Self::GBP(val) => *val,
+            Self::BRL(val) => *val,
+            Self::USD(val) => *val,
+        }
+    }
+}
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Transaction {
@@ -38,6 +48,7 @@ pub struct Transaction {
     pub end_date: Option<i64>,
 }
 
+// impl from trait for transaction
 impl Transaction {
     pub fn new(
         amount: Amount,
@@ -67,6 +78,6 @@ impl Transaction {
     }
 
     pub fn amount_value(&self) -> f32 {
-        self.amount.1
+        self.amount.value()
     }
 }

@@ -1,6 +1,6 @@
 use crate::{
     error::Error,
-    transaction::{Currency, Frequency, Transaction},
+    transaction::{Amount, Frequency, Transaction},
 };
 use serde::{Deserialize, Serialize};
 use serde_json;
@@ -63,9 +63,8 @@ impl State {
         } else {
             Some(label.to_string())
         };
-
-        let sterling_amount = (Currency::GBP, amount);
-        let frequency = Frequency::one_off();
+        let sterling_amount = Amount::GBP(amount);
+        let frequency = Frequency::one_off_now();
         let end_date = None;
         let transaction = Transaction::new(
             sterling_amount,

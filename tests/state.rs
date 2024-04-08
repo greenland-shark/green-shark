@@ -1,6 +1,6 @@
 use green_shark::{
     state::State,
-    transaction::{Currency, Frequency, Transaction},
+    transaction::{Amount, Frequency, Transaction},
 };
 
 #[test]
@@ -39,10 +39,10 @@ fn write_initial_state_to_file() {
 fn write_transaction_to_file() {
     let filepath = "./tests/data/write_single_transaction.json";
     let my_salary = Transaction::new(
-        (Currency::GBP, 100.40),
+        Amount::GBP(100.40),
         "company1".to_string(),
         Some("Salary".to_string()),
-        Frequency::one_off(),
+        Frequency::one_off_now(),
         None,
     );
 

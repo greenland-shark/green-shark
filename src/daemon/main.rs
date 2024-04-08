@@ -1,6 +1,4 @@
-use zbus::{Connection, Result, dbus_interface, ConnectionBuilder, SignalContext, fdo};
-use futures::stream::TryStreamExt;
-use event_listener::Event;
+use zbus::{ Result,  ConnectionBuilder };
 use green_shark::state::State;
 
 #[tokio::main]
