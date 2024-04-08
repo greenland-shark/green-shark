@@ -1,16 +1,16 @@
-use green_shark::transaction::{Currency, Frequency, Transaction};
+use green_shark::transaction::{Amount, Frequency, Transaction};
 
 #[test]
 fn uids_are_unique() {
     let transaction_1 = Transaction::new(
-        (Currency::GBP, 10.5),
+        Amount::GBP(10.5),
         "out1".to_string(),
         Some("drink".to_string()),
         Frequency::one_off_now(),
         None,
     );
     let transaction_2 = Transaction::new(
-        (Currency::GBP, 10.5),
+        Amount::GBP(10.5),
         "out1".to_string(),
         Some("drink".to_string()),
         Frequency::one_off_now(),

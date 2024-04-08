@@ -1,7 +1,9 @@
 {
   "incomes": [
     {
-      "amount": ["GBP", 100.4],
+      "amount": {
+        "GBP": 100.4
+      },
       "name": "company1",
       "label": "Salary",
       "id": 1710281164,
