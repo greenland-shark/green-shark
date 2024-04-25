@@ -1,0 +1,13 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches:
+      - "*"
+  pull_request:
+    branches:
+      - "*"
+
+jobs:
+  build:
+    uses: greenland-shark/green-shark/.github/workflows/build_test.yml@GS-8_recurring_transaction
