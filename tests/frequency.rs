@@ -1,37 +1,55 @@
-use green_shark::frequency::{num_occurences, Frequency, NumberMonths, NumberWeeks, StartDate};
-
-#[test]
-/// A frequency is defined given a start_date and an end in n months.
-fn for_n_months() {
-    let start = StartDate {
-        year: 2024,
-        month: 1,
-        date: 15,
-    };
-    let end = num_occurences::<NumberMonths>(6);
-    let test_frequency = Frequency::monthly_by_date(start, Some(end));
-
-    let expected_start_unix: i64 = 1705276800;
-    let expected_end_unix: i64 = 1721001600;
-    let expected_monthly = Frequency::MonthlyByDate(expected_start_unix, Some(expected_end_unix));
-
-    assert_eq!(expected_monthly, test_frequency);
-}
+use chrono::{Datelike, Days, Duration, NaiveDate, NaiveDateTime, NaiveTime, Utc, Weekday};
+use green_shark::frequency::{
+    from_date, increase_date_n_months, increase_date_n_weeks, Date, Frequency,
+};
 
 #[test]
 /// A frequency is defined given a start_date and an end in n weeks.
 fn for_n_weeks() {
-    let start = StartDate {
+    let start = Date {
         year: 2024,
         month: 1,
         date: 15,
     };
-    let end = num_occurences::<NumberWeeks>(8);
-    let test_frequency = Frequency::weekly(start, Some(end));
 
-    let expected_start_unix: i64 = 1705276800;
-    let expected_end_unix: i64 = 1710115200;
-    let expected_weekly = Frequency::Weekly(expected_start_unix, Some(expected_end_unix));
+    let n_weeks = 8;
+    let calcd = Frequency::weekly(start, Some(n_weeks)).unwrap();
+    let expected = {
+        let expected_start = from_date(start).unwrap();
+        let expected_end = from_date(Date {
+            year: 2024,
+            month: 3,
+            date: 11,
+        })
+        .unwrap();
+        Frequency::Weekly(expected_start, Some(expected_end), Weekday::Mon)
+    };
 
-    assert_eq!(expected_weekly, test_frequency);
+    assert_eq!(calcd, expected)
+}
+
+#[test]
+/// A frequency is defined given a start_date and an end in n months.
+fn for_n_months() {
+    let start = Date {
+        year: 2024,
+        month: 1,
+        date: 15,
+    };
+    let n_months = 6;
+    let calcd = Frequency::monthly_by_date(start, Some(n_months)).unwrap();
+
+    let expected = {
+        let expected_start = from_date(start).unwrap();
+        let expected_end = from_date(Date {
+            year: 2024,
+            month: 7,
+            date: 15,
+        })
+        .unwrap();
+
+        Frequency::MonthlyByDate(expected_start, Some(expected_end))
+    };
+
+    assert_eq!(calcd, expected)
 }
