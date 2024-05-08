@@ -1,5 +1,6 @@
+use crate::frequency::Frequency;
 use {
-    crate::transaction::{Amount, Frequency, Transaction},
+    crate::transaction::{Amount, Transaction},
     chrono::NaiveDateTime,
     clap::{Args, Parser, Subcommand},
 };

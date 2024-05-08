@@ -1,5 +1,4 @@
-use crate::error::Error;
-use chrono::{Datelike, Days, Duration, NaiveDate, NaiveDateTime, NaiveTime, Utc, Weekday};
+use chrono::{Datelike, Duration, NaiveDate, Utc, Weekday};
 use serde::{Deserialize, Serialize};
 
 // TODO Performance testing on the bus
@@ -38,7 +37,7 @@ pub enum Frequency {
 }
 
 impl Frequency {
-    pub fn one_off() -> Self {
+    pub fn one_off_now() -> Self {
         let now = Utc::now();
         let now = now.timestamp();
         Self::OneOff(now)

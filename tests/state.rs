@@ -1,6 +1,6 @@
 use green_shark::frequency::Frequency;
 use green_shark::state::State;
-use green_shark::transaction::{Amount, Currency, Transaction};
+use green_shark::transaction::{Amount, Transaction};
 
 #[test]
 fn initial_state_is_empty() {
