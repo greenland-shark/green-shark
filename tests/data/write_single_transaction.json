@@ -1,1 +1,1 @@
-{"incomes":[{"amount":["GBP",100.4],"name":"company1","label":"Salary","id":1715102530,"frequency":{"OneOff":1715102484},"start_date":1715102484,"end_date":null}],"outgoings":[]}
+{"incomes":[{"amount":{"GBP":100.4},"name":"company1","label":"Salary","id":1715209201,"frequency":{"OneOff":1715209199},"start_date":1715209199,"end_date":null}],"outgoings":[]}

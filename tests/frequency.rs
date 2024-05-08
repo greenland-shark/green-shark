@@ -1,7 +1,5 @@
-use chrono::{Datelike, Days, Duration, NaiveDate, NaiveDateTime, NaiveTime, Utc, Weekday};
-use green_shark::frequency::{
-    from_date, increase_date_n_months, increase_date_n_weeks, Date, Frequency,
-};
+use chrono::Weekday;
+use green_shark::frequency::{from_date, Date, Frequency};
 
 #[test]
 /// A frequency is defined given a start_date and an end in n weeks.
