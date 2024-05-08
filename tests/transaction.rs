@@ -1,4 +1,5 @@
-use green_shark::transaction::{Amount, Frequency, Transaction};
+use green_shark::frequency::Frequency;
+use green_shark::transaction::{Currency, Transaction};
 
 #[test]
 fn uids_are_unique() {
