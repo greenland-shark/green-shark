@@ -1,3 +1,6 @@
+use std::path::Path;
+use std::fs::File;
+
 use crate::error::Error;
 use crate::frequency::Frequency;
 use crate::transaction::{Amount, Transaction};
@@ -21,6 +24,13 @@ impl State {
 
     pub fn to_file(&self, filepath: &str) -> Result<(), Error> {
         let json_string = serde_json::to_string(&self).map_err(Error::SerdeJsonError)?;
+
+        let file_path = Path::new(filepath);
+
+        if !file_path.exists() {
+            File::create(file_path).map_err(Error::FileCreateError)?;
+        }
+
         std::fs::write(filepath, json_string).map_err(Error::FileWriteError)
     }
 
