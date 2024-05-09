@@ -13,4 +13,7 @@ pub enum Error {
 
     #[error("failed to create file.")]
     FileCreateError(#[source] std::io::Error),
+
+    #[error("failed to create directory.")]
+    DirCreateError(#[source] std::io::Error),
 }

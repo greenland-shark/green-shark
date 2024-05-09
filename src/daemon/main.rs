@@ -1,17 +1,19 @@
-use green_shark:: state::State;
+use chrono::{DateTime, Local, NaiveDate};
+use green_shark::state::State;
 use std::{env, error::Error};
 use zbus::ConnectionBuilder;
-use chrono::{DateTime, Local};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
+    let last_update: Option<NaiveDate> = None;
+    let next_update: Option<NaiveDate> = None;
     let config = check_if_for_env_config_exists_if_not_create_it();
-    println!("{}", config);
 
-    let mut state = match State::from_file(&config){
+    let state = match State::from_file(&config) {
         Ok(s) => s,
         Err(_) => State::new(),
     };
+
 
     let _connection = ConnectionBuilder::session()?
         .name("org.green_sharkd.GreenSharkd")?
@@ -31,8 +33,8 @@ fn check_if_for_env_config_exists_if_not_create_it() -> String {
     if let Ok(path) = env::var("GREEN_SHARK_CONFIG") {
         path
     } else {
-        let mut home = env::var("HOME").unwrap();
-        home.push_str("/.config/green-shark/state.json");
-        home
+        let mut path = env::var("HOME").unwrap();
+        path.push_str("/.config/green_shark");
+        path
     }
 }
