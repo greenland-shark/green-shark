@@ -10,4 +10,4 @@ on:
 
 jobs:
   build:
-    uses: greenland-shark/green-shark/.github/workflows/build_test.yml@GS-8_recurring_transaction
+    uses: greenland-shark/green-shark/.github/workflows/build_test.yml@main

@@ -32,3 +32,4 @@ thiserror = "1.0.20"
 clap = { version = "4.5.3", features = ["derive", "cargo"] }
 clap-help = "1.2.0"
 termimad = "0.29.1"
+csv = "1.1"
